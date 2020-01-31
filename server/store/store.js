@@ -9,17 +9,18 @@ const pool = new Pool({
   port: 5001,
 });
 
+let client = null;
+
 async function createDB() {
-  const client = await pool.connect();
+  client = await pool.connect();
   const res = await client.query('SELECT NOW()');
   console.log(res.rows[0]);
-  return client;
 }
 
 async function initializeDB() {
   const client = await createDB();
-  //createUsersTable(Data.users, client);
-  //createProductsTable(Data.products, client);
+  createUsersTable(Data.users, client);
+  createProductsTable(Data.products, client);
   createOrdersTable(Data.orders, client);
   createAddressesTable(Data.addresses, client);
   createProductsOrdersTable(Data.productsOrders, client);
@@ -101,4 +102,114 @@ async function createProductsOrdersTable(productsOrders = [], client) {
   }
 }
 
+async function getAllUsers() {
+  try {
+    const { rows } = await client.query('SELECT * FROM users');
+    return rows;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getUserByID(userID) {
+  try {
+    const { rows } = await client.query(
+      `SELECT id, name FROM users WHERE id=${userID}`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getAllProducts() {
+  try {
+    const { rows } = await client.query('SELECT * FROM products');
+    return rows;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getProductByID(productID) {
+  try {
+    const { rows } = await client.query(
+      `SELECT id,title,description,price,image FROM products WHERE id=${productID}`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getAddressByUserID(userID) {
+  try {
+    const { rows } = await client.query(
+      `SELECT number,street,town,postalcode FROM addresses WHERE user_id='${userID}'`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getAllOrders() {
+  try {
+    const { rows } = await client.query(`SELECT * FROM orders`);
+    return rows;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getOrderByID(orderID) {
+  console.log(typeof orderID);
+  try {
+    const { rows } = await client.query(
+      `SELECT id,amount,date FROM orders WHERE id='${orderID}'`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getOrdersByUserID(userID) {
+  try {
+    const { rows } = await client.query(
+      `SELECT id,amount,date FROM orders WHERE user_id='${userID}'`
+    );
+    console.log(rows);
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function getProductsByOrderID(orderID) {
+  try {
+    const { rows } = await client.query(
+      `SELECT * FROM products p LEFT JOIN productsorders po ON TEXT(p.id)=po.product_id LEFT JOIN orders o ON TEXT(o.id)=po.order_id WHERE o.id=${orderID};`
+    );
+    console.log(rows);
+    return rows;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+createDB();
+
 //initializeDB();
+
+module.exports = {
+  getAllUsers,
+  getUserByID,
+  getAllProducts,
+  getProductByID,
+  getAddressByUserID,
+  getAllOrders,
+  getOrderByID,
+  getOrdersByUserID,
+  getProductsByOrderID,
+};
