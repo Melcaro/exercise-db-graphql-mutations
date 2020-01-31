@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.6.0",
+    "nodemon": "^2.0.2",
+    "pg": "^7.18.1"
+  },
+  "scripts": {
+    "start:dev": "nodemon index.js",
+    "initDB": "node ./scripts/init.js"
+  }
+}
