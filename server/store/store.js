@@ -191,8 +191,45 @@ async function getProductsByOrderID(orderID) {
     const { rows } = await client.query(
       `SELECT * FROM products p LEFT JOIN productsorders po ON TEXT(p.id)=po.product_id LEFT JOIN orders o ON TEXT(o.id)=po.order_id WHERE o.id=${orderID};`
     );
-    console.log(rows);
     return rows;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function addUser(userPassword, userName, userAddressID) {
+  try {
+    const { rows } = await client.query(
+      `INSERT INTO users (password,name,address_id) VALUES('${userPassword}','${userName}',${userAddressID}) RETURNING *`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function addProduct(
+  productTitle,
+  productDescription,
+  productPrice,
+  productImage
+) {
+  try {
+    const { rows } = await client.query(
+      `INSERT INTO products (title,description,price,image) VALUES('${productTitle}','${productDescription}','${productPrice}','${productImage}') RETURNING *`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function addOrder(orderUserID, orderAmount, orderDate) {
+  try {
+    const { rows } = await client.query(
+      `INSERT INTO orders (user_id,amount,date) VALUES('${orderUserID}',${orderAmount},'${orderDate}') RETURNING *`
+    );
+    return rows[0];
   } catch (e) {
     console.log(e);
   }
@@ -212,4 +249,7 @@ module.exports = {
   getOrderByID,
   getOrdersByUserID,
   getProductsByOrderID,
+  addUser,
+  addProduct,
+  addOrder,
 };

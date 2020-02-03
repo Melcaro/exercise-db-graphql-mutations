@@ -115,4 +115,61 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
-module.exports = new GraphQLSchema({ query: RootQuery });
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    addUser: {
+      type: UserType,
+      args: {
+        password: { type: GraphQLString },
+        name: { type: GraphQLString },
+        address_id: { type: GraphQLInt },
+      },
+      resolve: async (parent, args) => {
+        const user = await Store.addUser(
+          args.password,
+          args.name,
+          args.address_id
+        );
+        return user;
+      },
+    },
+
+    addProduct: {
+      type: ProductType,
+      args: {
+        title: { type: GraphQLString },
+        description: { type: GraphQLString },
+        price: { type: GraphQLInt },
+        image: { type: GraphQLString },
+      },
+      resolve: async (parent, args) => {
+        const product = await Store.addProduct(
+          args.title,
+          args.description,
+          args.price,
+          args.image
+        );
+        return product;
+      },
+    },
+    addOrder: {
+      type: OrderType,
+      args: {
+        user_id: { type: GraphQLInt },
+        amount: { type: GraphQLInt },
+        date: { type: GraphQLString },
+      },
+      resolve: async (parent, args) => {
+        const order = await Store.addOrder(
+          args.user_id,
+          args.amount,
+          args.date
+        );
+        return order;
+      },
+    },
+  },
+});
+
+module.exports = new GraphQLSchema({ query: RootQuery, mutation: Mutation });
