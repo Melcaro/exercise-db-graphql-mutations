@@ -105,6 +105,7 @@ async function createProductsOrdersTable(productsOrders = [], client) {
 async function getAllUsers() {
   try {
     const { rows } = await client.query('SELECT * FROM users');
+    console.log(rows);
     return rows;
   } catch (e) {
     console.log(e);
@@ -145,7 +146,7 @@ async function getProductByID(productID) {
 async function getAddressByUserID(userID) {
   try {
     const { rows } = await client.query(
-      `SELECT number,street,town,postalcode FROM addresses WHERE user_id='${userID}'`
+      `SELECT id, number,street,town,postalcode FROM addresses WHERE user_id='${userID}'`
     );
     return rows[0];
   } catch (e) {
@@ -197,10 +198,10 @@ async function getProductsByOrderID(orderID) {
   }
 }
 
-async function addUser(userPassword, userName, userAddressID) {
+async function addUser(userPassword, userName) {
   try {
     const { rows } = await client.query(
-      `INSERT INTO users (password,name,address_id) VALUES('${userPassword}','${userName}',${userAddressID}) RETURNING *`
+      `INSERT INTO users (password,name) VALUES('${userPassword}','${userName}') RETURNING *`
     );
     return rows[0];
   } catch (e) {
@@ -235,6 +236,28 @@ async function addOrder(orderUserID, orderAmount, orderDate) {
   }
 }
 
+async function updateProductsOrders(productID, orderID) {
+  try {
+    const { rows } = await client.query(
+      `INSERT INTO productsorders (product_id,order_id) VALUES(${productID},${orderID}) RETURNING * `
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function addAddress(userID, number, street, town, postalCode) {
+  try {
+    const { rows } = await client.query(
+      `INSERT INTO addresses (user_id,number,street,town,postalcode) VALUES('${userID}','${number}','${street}','${town}','${postalCode}') RETURNING *`
+    );
+    return rows[0];
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 createDB();
 
 //initializeDB();
@@ -252,4 +275,6 @@ module.exports = {
   addUser,
   addProduct,
   addOrder,
+  updateProductsOrders,
+  addAddress,
 };

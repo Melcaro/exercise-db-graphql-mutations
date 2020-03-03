@@ -15,7 +15,6 @@ const UserType = new GraphQLObjectType({
     id: { type: GraphQLID },
     password: { type: GraphQLString },
     name: { type: GraphQLString },
-    address_id: { type: GraphQLInt },
     address: {
       type: AddressType,
       resolve: async parent => {
@@ -70,11 +69,19 @@ const OrderType = new GraphQLObjectType({
   }),
 });
 
+const ProductOrderType = new GraphQLObjectType({
+  name: 'ProductOrder',
+  fields: () => ({
+    product_id: { type: GraphQLID },
+    order_id: { type: GraphQLID },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
     users: {
-      type: new GraphQLList(UserType),
+      type: new GraphQLList(UserType), // envoyer un type GraphQL (int ou id)
       resolve: async (parent, args) => {
         return await Store.getAllUsers();
       },
@@ -123,13 +130,19 @@ const Mutation = new GraphQLObjectType({
       args: {
         password: { type: GraphQLString },
         name: { type: GraphQLString },
-        address_id: { type: GraphQLInt },
+        number: { type: GraphQLString },
+        street: { type: GraphQLString },
+        town: { type: GraphQLString },
+        postalcode: { type: GraphQLString },
       },
       resolve: async (parent, args) => {
-        const user = await Store.addUser(
-          args.password,
-          args.name,
-          args.address_id
+        const user = await Store.addUser(args.password, args.name);
+        const address = await Store.addAddress(
+          user.id,
+          args.number,
+          args.street,
+          args.town,
+          args.postalcode
         );
         return user;
       },
@@ -159,6 +172,7 @@ const Mutation = new GraphQLObjectType({
         user_id: { type: GraphQLInt },
         amount: { type: GraphQLInt },
         date: { type: GraphQLString },
+        products_ids: { type: new GraphQLList(GraphQLInt) },
       },
       resolve: async (parent, args) => {
         const order = await Store.addOrder(
@@ -166,7 +180,38 @@ const Mutation = new GraphQLObjectType({
           args.amount,
           args.date
         );
+
+        const updateProductsOrders = products_ids.map(async productID => {
+          return await Store.updateProductsOrders(productID, order.id);
+        });
         return order;
+      },
+    },
+    updateProductsOrders: {
+      type: ProductOrderType,
+      args: { product_id: { type: GraphQLID }, order_id: { type: GraphQLID } },
+      resolve: async (parent, { product_id, order_id }) => {
+        return await Store.updateProductsOrders(product_id, order_id);
+      },
+    },
+
+    addAddress: {
+      type: AddressType,
+      args: {
+        user_id: { type: GraphQLString },
+        number: { type: GraphQLString },
+        street: { type: GraphQLString },
+        town: { type: GraphQLString },
+        postalCode: { type: GraphQLString },
+      },
+      resolve: async (parent, args) => {
+        return await Store.addAddress(
+          args.user_id,
+          args.number,
+          args.street,
+          args.town,
+          args.postalCode
+        );
       },
     },
   },
